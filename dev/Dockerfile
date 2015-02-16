@@ -7,7 +7,10 @@
 #
 
 # Pull base image.
-FROM dockerfile/ubuntu
+FROM niaquinto/grails
+
+USER root
+WORKDIR "/"
 
 # Install SSH
 RUN \
@@ -30,21 +33,17 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 # Install VIM, TMUX and Git
 RUN \
   apt-get update && \
-  apt-get install vim git tmux
+  apt-get -y install vim git tmux mercurial meld
 RUN \
-  git clone http://github.com/ShaneBurkhart/dotfiles.git && \
+  git clone http://github.com/ShaneBurkhart/dotfiles.git ~/dotfiles && \
   cd ~/dotfiles && ./makelinks.sh
 
 
 ##### Specific to your dev env (Languages) #####
-RUN apt-get install wget
-# Install GoLang
-RUN wget -O ~/go.tar.gz https://storage.googleapis.com/golang/go1.3.3.linux-amd64.tar.gz
-RUN tar -C /usr/local -xzf ~/go.tar.gz
-RUN rm ~/go.tar.gz
-RUN mkdir -p ~/GoWorkspace
-
-ENV PATH $PATH:/usr/local/go/bin
+RUN echo "export JAVA_HOME=/usr/lib/jvm/java-7-oracle" >> /root/.bashrc
+RUN echo "export GRAILS_HOME=/usr/lib/jvm/grails" >> /root/.bashrc
+RUN echo "export PATH=$GRAILS_HOME/bin:$PATH" >> /root/.bashrc
 
 EXPOSE 22
-CMD ["/usr/sbin/sshd", "-D"]
+ENTRYPOINT ["/usr/sbin/sshd"]
+CMD ["-D"]
